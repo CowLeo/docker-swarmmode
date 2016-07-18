@@ -1,2 +1,2 @@
 #!/bin/bash
-docker-machine rm -f jenkins-master jenkins1 jenkins2 manager
+docker-machine rm -f sw1 sw2 sw3 sw4

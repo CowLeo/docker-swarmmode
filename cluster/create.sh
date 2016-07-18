@@ -6,35 +6,28 @@ token=$(docker run --rm swarm create)
 echo "Create swarm manager"
 docker-machine create \
     -d digitalocean \
-    --digitalocean-access-token=$DO_ACCESS_TOKEN \
-    --swarm --swarm-master \
+    --digitalocean-access-token=$DO \
     --engine-install-url https://test.docker.com \
-    --engine-opt="cluster-advertise=eth0:2376" \
-    manager
+    sw1
+docker-machine ssh sw1 docker swarm init
 
 docker-machine create \
     -d digitalocean \
-    --digitalocean-access-token=$DO_ACCESS_TOKEN \
+    --digitalocean-access-token=$DO \
     --engine-install-url https://test.docker.com \
-    --swarm \
-    --engine-opt="cluster-advertise=eth0:2376" \
-    jenkins-master &
+    sw2 && docker-machine ssh sw2 docker swarm join $(docker-machine ip sw1):2377 &
 
 docker-machine create \
     -d digitalocean \
-    --digitalocean-access-token=$DO_ACCESS_TOKEN \
-    --engine-install-url https://test.docker.com \
-    --swarm \
-    --engine-opt="cluster-advertise=eth0:2376" \
-    jenkins1 &
+    --digitalocean-access-token=$DO \
+    --engine-install-url https://test.docker.com  \
+    sw3 && docker-machine ssh sw3 docker swarm join $(docker-machine ip sw1):2377 &
 
 docker-machine create \
     -d digitalocean \
-    --digitalocean-access-token=$DO_ACCESS_TOKEN \
+    --digitalocean-access-token=$DO \
     --engine-install-url https://test.docker.com \
-    --swarm \
-    --engine-opt="cluster-advertise=eth0:2376" \
-    jenkins2 &
+    sw4 && docker-machine ssh sw2 docker swarm join $(docker-machine ip sw1):2377 &
 wait
 
 # Information
@@ -42,4 +35,4 @@ echo ""
 echo "CLUSTER INFORMATION"
 echo "discovery token: ${token}"
 echo "Environment variables to connect trough docker cli"
-docker-machine env --swarm manager
+docker-machine env sw1
