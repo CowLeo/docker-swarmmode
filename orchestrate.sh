@@ -12,11 +12,11 @@ function d12_create_network {
     docker network create ${D_NETWORK}
 }
 
-function d12_create {
+function d12_cluster_create {
     exec ./cluster/create.sh
 }
 
-function d12_destroy {
+function d12_cluster_destroy {
     exec ./cluster/destroy.sh
 }
 
@@ -26,7 +26,7 @@ function d12_run_micro() {
     if [ -z $version ]
         then version=latest
     fi
-    if [$version -eq "1.0.0"]
+    if [$version -eq 1.0.0]
     then
         docker run -d --name ${D_PROJECT}_micro_$(echo $version | head -c 1) \
             --net ${D_NETWORK} \
