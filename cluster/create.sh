@@ -1,34 +1,48 @@
 #!/bin/bash
+if [ -z $1 ]
+then
+    provider=virtualbox
+else
+    provider=$1
+fi
 
-token=$(docker run --rm swarm create)
+echo "### Init Servers ###"
 
-# Swarm manager machine
-echo "Create swarm manager"
-docker-machine create \
-    -d digitalocean \
-    --digitalocean-access-token=$DO \
-    --engine-install-url https://test.docker.com \
-    sw1
-docker-machine ssh sw1 docker swarm init
+if [ "$provider" = "virtualbox" ]; then
+    echo "### Virtualbox provider ###"
+    docker-machine create -d ${provider} sw1 &
+    docker-machine create -d ${provider} sw2 &
+    docker-machine create -d ${provider} sw3 &
+    docker-machine create -d ${provider} sw4 &
+else
+    docker-machine create \
+        --digitalocean-access-token=$DO \
+        --engine-install-url https://test.docker.com \
+        -d ${provider} sw1 &
+    docker-machine create \
+        --digitalocean-access-token=$DO \
+        --engine-install-url https://test.docker.com \
+        -d ${provider} sw2 &
+    docker-machine create \
+        --digitalocean-access-token=$DO \
+        --engine-install-url https://test.docker.com \
+        -d ${provider} sw3 &
+    docker-machine create \
+        --digitalocean-access-token=$DO \
+        --engine-install-url https://test.docker.com \
+        -d ${provider} sw4 &
+fi
 
-docker-machine create \
-    -d digitalocean \
-    --digitalocean-access-token=$DO \
-    --engine-install-url https://test.docker.com \
-    sw2 && docker-machine ssh sw2 docker swarm join $(docker-machine ip sw1):2377 &
-
-docker-machine create \
-    -d digitalocean \
-    --digitalocean-access-token=$DO \
-    --engine-install-url https://test.docker.com  \
-    sw3 && docker-machine ssh sw3 docker swarm join $(docker-machine ip sw1):2377 &
-
-docker-machine create \
-    -d digitalocean \
-    --digitalocean-access-token=$DO \
-    --engine-install-url https://test.docker.com \
-    sw4 && docker-machine ssh sw2 docker swarm join $(docker-machine ip sw1):2377 &
 wait
+
+echo "### Configurate cluster ###"
+
+docker-machine ssh sw1 docker swarm init \
+    --listen-addr $(docker-machine ip sw1) --auto-accept manager --auto-accept worker --secret toosecret
+
+docker-machine ssh sw2 docker swarm join $(docker-machine ip sw1):2377 --secret toosecret
+docker-machine ssh sw3 docker swarm join $(docker-machine ip sw1):2377 --secret toosecret
+docker-machine ssh sw4 docker swarm join $(docker-machine ip sw1):2377 --secret toosecret
 
 # Information
 echo ""
