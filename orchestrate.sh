@@ -4,7 +4,7 @@ if [ -z $D_NETWORK ]; then
     export D_NETWORK=ds_net
 fi
 
-if [ -z $D_PROJECT]; then
+if [ -z $D_PROJECT ]; then
     export D_PROJECT=ds
 fi
 
@@ -94,6 +94,9 @@ function d12_micro_service() {
 function d12_micro_service_update_to_200 {
     docker service update \
         --update-delay 10m \
+        -e MYSQL_USERNAME=root \
+        -e MYSQL_PASSWORD=root \
+        -e MYSQL_ADDR=${D_PROJECT}_mysql \
         --update-parallelism 2 \
         --image gianarb/micro:2.0.0 ${D_PROJECT}_micro
 }
