@@ -89,3 +89,11 @@ function d12_micro_service() {
             --publish 8000/tcp gianarb/micro:${version}
     fi
 }
+
+# Update ds_service 1.0.0 to 2.0.0
+function d12_micro_service_update_to_200 {
+    docker service update \
+        --update-delay 10m \
+        --update-parallelism 2 \
+        --image gianarb/micro:2.0.0 ${D_PROJECT}_micro
+}
